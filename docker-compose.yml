@@ -1,0 +1,47 @@
+services:
+  garantapp:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+    networks:
+      - garantnetwork
+    volumes:
+      - ./garantapp:/garantapp
+    environment:
+      - DB_NAME=${POSTGRES_DB}
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+    command: >
+      sh -c "poetry run python3 manage.py runserver 0.0.0.0:8000"
+
+    depends_on:
+      - garant_db
+
+  garant_db:
+    image: postgres:14.9-alpine
+    container_name: garant_db
+    restart: always
+    env_file:
+      - ./.env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+    volumes:
+      - garant_db:/data/db
+    ports:
+      - "5435:5432"
+    networks:
+      - garantnetwork
+
+networks:
+  garantnetwork:
+    driver: bridge
+
+volumes:
+  garant_db:
+#  garantapp:
